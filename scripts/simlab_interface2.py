@@ -30,16 +30,43 @@ directory = rospack.get_path('lu4r_ros_interface')
 def audiocallback(data):
 	print 'Received: ' + data
 	if data and not data.isspace():
-		to_send = {'hypo': data, 'entities': entities}
-		response = requests.post(lu4r_url, to_send, headers=HEADERS)
-		predicates = xdg.find_predicates(response.text)
-		# connection.send(predicates+'\r\n')
-		print predicates
+		if "KEEP_AWAKE" in data:
+			data = data.replace("KEEP_AWAKE\n", "")
+			if len(data) == 0:
+				continue
+			if '$' in data:
+				current_fragment = data[1:-1]
+				continue
+			if current_fragment == "HOME":
+				continue
+			elif current_fragment == "JOY":
+				rho_theta = data.split()
+				rho = float(rho_theta[0])
+				theta = radians(float(rho_theta[1]))
+				motion.linear.x = max_tv * rho * sin(theta)
+				motion.angular.z = max_rv * -1 * rho * cos(theta)
+				v_joy_pad.publish(motion)
+			elif current_fragment == "SLU":
+				to_send = {'hypo': data, 'entities': entities}
+				response = requests.post(lu4r_url, to_send, headers=HEADERS)
+				predicates = xdg.find_predicates(response.text)
+				# connection.send(predicates+'\r\n')
+				print predicates
+			else:
+				print "Unknown service"
+		else:
+			print 'Disconnected from ' + address[0] + ':' + str(address[1])
+			current_fragment = ''
+			break
 
 def listener():
 	global semantic_map
 	global connection
+	motion = Twist()
 	rospy.init_node('simlab_interface', anonymous=True)
+	v_joy_pad = rospy.Publisher('cmd_vel', Twist, queue_size=1)
+	max_tv = rospy.get_param("~max_tv", 0.6)
+	max_rv = rospy.get_param("~max_rv", 0.8)
 	listening_port = rospy.get_param("~port", 5001)
 	lu4r_ip = rospy.get_param("~lu4r_ip", '127.0.0.1')
 	lu4r_port = rospy.get_param("~lu4r_port", '9090')
@@ -57,8 +84,24 @@ def listener():
 		print str(semantic_map[entity['type']])
 		print
 	current_fragment = ''
+	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+	print 'Socket created'
+	host = ''
+	try:
+		s.bind((host, listening_port))
+	except socket.error as msg:
+		print 'Bind failed. Error Code : ' + str(msg[0]) + ' Message ' + msg[1]
+		sys.exit()
+	print 'Socket bind complete'
+
+	#s.listen(10)
 
     rospy.spin()
+
+
+	s.close()
+
 
 if __name__ == '__main__':
 	listener()

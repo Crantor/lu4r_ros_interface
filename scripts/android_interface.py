@@ -39,6 +39,7 @@ def listener():
 	listening_port = rospy.get_param("~port", 5001)
 	lu4r_ip = rospy.get_param("~lu4r_ip", '127.0.0.1')
 	lu4r_port = rospy.get_param("~lu4r_port", '9090')
+	interface_eth = rospy.get_param("~net_if", 'wlan0')
 	lu4r_url = 'http://' + lu4r_ip + ':' + str(lu4r_port) + '/service/nlu'
 	sem_map = rospy.get_param('~semantic_map', 'semantic_map1.txt')
 	entities = open(directory + "/semantic_maps/" + sem_map).read()
@@ -66,7 +67,7 @@ def listener():
 	s.listen(10)
 
 	while not rospy.is_shutdown():
-		print "Waiting for connection on " + ni.ifaddresses('wlan0')[2][0]['addr'] + ':' + str(listening_port)
+		print "Waiting for connection on " + ni.ifaddresses(interface_eth)[2][0]['addr'] + ':' + str(listening_port)
 		connection, address = s.accept()
 		print 'Connected with ' + address[0] + ':' + str(address[1])
 		while not rospy.is_shutdown():
