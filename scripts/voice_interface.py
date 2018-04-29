@@ -43,7 +43,7 @@ def listen():
 			if not 'confidence' in i.keys():
 				i['confidence'] = 0 # As google just returns one value with confidence it has to be added
 		voice_command = json.dumps(voice_command['alternative']) # converted into json format
-		voice_command = "hypo=" + voice_command.replace("transcript","transcription")[1:-1] # transcript key changed to transcription, added hypo key
+		voice_command = '{"hypotheses":' + voice_command.replace("transcript","transcription")+'}' # transcript key changed to transcription, added hypo key
 		print "Voice command string: " + voice_command
 		pub.publish(voice_command)
 	else:
