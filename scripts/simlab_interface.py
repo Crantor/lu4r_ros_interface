@@ -27,8 +27,11 @@ HEADERS = {'content-type': 'application/json'}
 rospack = rospkg.RosPack()
 directory = rospack.get_path('lu4r_ros_interface')
 
-#Subscriber
+#Subscriber (Audio)
 sub = None
+
+#Publisher (Interpreter)
+pub = None
 
 #default values for connection
 lu4r_ip = '127.0.0.1'
@@ -43,6 +46,10 @@ def inputaudiocallback(data):
 	to_send = {'hypo': data.data, 'entities': entities}
 	response = requests.post(lu4r_url, to_send, headers=HEADERS)
 	print response.text
+	if(response.text is not 'NO FRAME(S) FOUND'):
+		pub.publish(response.text)
+	else:
+		print('Lu4r server could not understand the command.')
 	#predicates = xdg.find_predicates(response.text)
 	# connection.send(predicates+'\r\n')
 	#print predicates
@@ -55,9 +62,11 @@ def listener():
 	global lu4r_port
 	global lu4r_url
 	global entities
+	global pub
 
 	rospy.init_node('simlab_interface', anonymous=True)
 	rospy.Subscriber('/audio', String, inputaudiocallback)
+	pub = rospy.Publisher('/interpretation',String, queue_size = 1000)
 
 	lu4r_ip = rospy.get_param("~lu4r_ip", '127.0.0.1')
 	lu4r_port = rospy.get_param("~lu4r_port", '9090')
