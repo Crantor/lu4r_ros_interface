@@ -9,4 +9,11 @@
   <node name="simlab_interface" pkg="lu4r_ros_interface" type="simlab_interface.py" output="screen">
   </node>
 
+  <!-- Launch simlab_interpreter -->
+  <node name="simlab_interpreter" pkg="lu4r_ros_interface" type="simlab_interpreter.py" output="screen">
+  </node>
+
+  <node name="rosarnl_node" pkg="rosarnl" type="rosarnl_node" output="screen">
+  </node>
+
 </launch>
