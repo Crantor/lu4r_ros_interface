@@ -62,9 +62,11 @@ goals = [
 
 #current_action = ""
 isWorking = False
+current_target = ""
 
 def interpretercallback(data):
 	global isWorking
+	global current_target
 
 	def getContent():
 		return data.data.split('(')[1].split(')')[0]
@@ -79,9 +81,9 @@ def interpretercallback(data):
 
     # CHANGE_OPERATIONAL_STATE (STOP)
 	if action == possible_actions[6]:
-		rospy.wait_for_service('/rosarnl_node/stop')
+		rospy.wait_for_service('/rosarnl_node')
 		try:
-			stop = rospy.ServiceProxy('/rosarnl_node', stop)
+			stop = rospy.ServiceProxy('/rosarnl_node',stop)
 			stop()
 
 		except rospy.ServiceException, e:
@@ -101,44 +103,39 @@ def interpretercallback(data):
 		for word in content:
 			index = checkList(word, goals)
 
-			if(index != -1):
-				goal = goals[index][0]
-				# Giving order to go to the indicated goal if there are no other orders yet.
-				if not isWorking:
-					print("MOTION: Going to ",goal)
-					command_list.append(goal)
-			else:
-				print("I did not understand you, please repeat.")
+		if(index != -1):
+			goal = goals[index][0]
+			# Giving order to go to the indicated goal if there are no other orders yet.
+			#if not isWorking:
+			print("MOTION: Going to ",goal)
+			command_list.append(goal)
+
+		else:
+			print("I did not understand you, please repeat.")
 
 	if not isWorking and len(command_list) is not 0:
 		isWorking = True
 		# Sending work to the arnl node
-		pub.publish(command_list.pop()) # Getting First command.
+		current_target = command_list.pop()
+		pub.publish(current_target) # Getting First command.
 
 def stateCallback(data):
-	print "State: " + data.data
-	print("Command_List:")
-	print(command_list)
+	global current_target
+
 	if(data.data) == "REACHED_GOAL":
 		if len(command_list) == 0:
 			isWorking = False
-			print "Aqui llego"
+			rospy.sleep(5)
+			pub.publish(current_target)
 		else:
-			pub.publish(command_list.pop())
+			current_target = command_list.pop()
+			pub.publish(current_target)
 
 def checkList(x,l):
 	for elem in l:
 		if x in elem:
 			return l.index(elem)
 	return -1
-'''
-	for elem in l:
-		if elem == x:
-			return True
-		if isinstance(elem,list):
-			return checkList(x,elem)
-	return False
-'''
 
 def listener():
 	global sub_interpreter
@@ -146,13 +143,12 @@ def listener():
 	global pub
 
 	rospy.init_node('simlab_interpreter', anonymous=True)
+
 	sub_interpreter = rospy.Subscriber('/interpretation', String, interpretercallback)
 
 	sub_arnl = rospy.Subscriber('/rosarnl_node/arnl_path_state', String, stateCallback)
 
 	pub = rospy.Publisher('/rosarnl_node/goalname',String, queue_size = 1000)
-
-
 
 
 
