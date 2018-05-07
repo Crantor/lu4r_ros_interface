@@ -1,0 +1,12 @@
+<launch>
+
+  <!-- Launch voice interpreter -->
+ <!--<arg name="aria_lasers" default="true" />-->
+ <node name="audiolistener" pkg="lu4r_ros_interface" type="voice_interface.py" output ="screen">
+   </node>
+
+  <!-- Launch simlab_interface -->
+  <node name="simlab_interface" pkg="lu4r_ros_interface" type="simlab_interface.py" output="screen">
+  </node>
+
+</launch>
