@@ -16,6 +16,7 @@ from geometry_msgs.msg import Twist
 import xmltodict
 import xdg_extract as xdg
 import netifaces as ni
+import os
 
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -59,6 +60,11 @@ goals = [
 	["Goal2","bathroom","toilet","bath","sink","toothbrush"],
 	["Goal3","exit","door","escape"]]
 
+objects = [
+	["Goal0"],
+	["Goal1","knife","oven","spoon","fork","food"],
+	["Goal2","toothbrush","soap","kraken"],
+	["Goal3","kraken"]]
 
 #current_action = ""
 isWorking = False
@@ -81,13 +87,16 @@ def interpretercallback(data):
 
     # CHANGE_OPERATIONAL_STATE (STOP)
 	if action == possible_actions[6]:
-		rospy.wait_for_service('/rosarnl_node')
+		'''
+		rospy.wait_for_service('rosarnl_node')
 		try:
-			stop = rospy.ServiceProxy('/rosarnl_node',stop)
-			stop()
+			stop_action = rospy.ServiceProxy('rosarnl_node',stop_srv)
+			ret = stop_action()
 
 		except rospy.ServiceException, e:
 			print "Service call failed: %s"%e
+		'''
+		os.system('rosservice call /rosarnl_node/stop')
 
 	# MOTION
 	# Example of transcription received: MOTION(goal:"to the bathroom")
@@ -113,22 +122,25 @@ def interpretercallback(data):
 		else:
 			print("I did not understand you, please repeat.")
 
+	# RELEASING
+	# Example of transcription received: RELEASING(theme:"the Kraken")
+
+
 	if not isWorking and len(command_list) is not 0:
 		isWorking = True
 		# Sending work to the arnl node
-		current_target = command_list.pop()
+		current_target = command_list.pop(0)
 		pub.publish(current_target) # Getting First command.
 
 def stateCallback(data):
 	global current_target
+	global isWorking
 
 	if(data.data) == "REACHED_GOAL":
 		if len(command_list) == 0:
 			isWorking = False
-			rospy.sleep(5)
-			pub.publish(current_target)
 		else:
-			current_target = command_list.pop()
+			current_target = command_list.pop(0)
 			pub.publish(current_target)
 
 def checkList(x,l):
