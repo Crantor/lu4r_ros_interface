@@ -69,10 +69,13 @@ objects = [
 #current_action = ""
 isWorking = False
 current_target = ""
+last_target = ""
 
 def interpretercallback(data):
 	global isWorking
 	global current_target
+	global last_target
+	global command_list
 
 	def getContent():
 		return data.data.split('(')[1].split(')')[0]
@@ -87,15 +90,9 @@ def interpretercallback(data):
 
     # CHANGE_OPERATIONAL_STATE (STOP)
 	if action == possible_actions[6]:
-		'''
-		rospy.wait_for_service('rosarnl_node')
-		try:
-			stop_action = rospy.ServiceProxy('rosarnl_node',stop_srv)
-			ret = stop_action()
-
-		except rospy.ServiceException, e:
-			print "Service call failed: %s"%e
-		'''
+		command_list = []
+		isWorking = False
+		current_target = ""
 		os.system('rosservice call /rosarnl_node/stop')
 
 	# MOTION
@@ -130,15 +127,20 @@ def interpretercallback(data):
 		isWorking = True
 		# Sending work to the arnl node
 		current_target = command_list.pop(0)
+		last_target = current_target
 		pub.publish(current_target) # Getting First command.
 
 def stateCallback(data):
-	global current_target
 	global isWorking
+	global current_target
+	global last_target
+	global command_list
 
 	if(data.data) == "REACHED_GOAL":
+		last_target = current_target
 		if len(command_list) == 0:
 			isWorking = False
+			current_target = ""
 		else:
 			current_target = command_list.pop(0)
 			pub.publish(current_target)
@@ -155,14 +157,9 @@ def listener():
 	global pub
 
 	rospy.init_node('simlab_interpreter', anonymous=True)
-
 	sub_interpreter = rospy.Subscriber('/interpretation', String, interpretercallback)
-
 	sub_arnl = rospy.Subscriber('/rosarnl_node/arnl_path_state', String, stateCallback)
-
 	pub = rospy.Publisher('/rosarnl_node/goalname',String, queue_size = 1000)
-
-
 
 	rospy.spin()
 
