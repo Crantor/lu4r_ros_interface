@@ -5,12 +5,12 @@
   <arg name="_semantic_map" default=""/>
 
   <!-- Launch voice interpreter -->
-  <node name="audiolistener" pkg="lu4r_ros_interface" type="voice_interface.py"
-     args="_lu4r_ip:=$(arg _lu4r_ip) _lu4r_port:=$(arg _lu4r_port) _semantic_map:=$(arg _semantic_map)" output ="screen">
+  <node name="audiolistener" pkg="lu4r_ros_interface" type="voice_interface.py" output ="screen">
   </node>
 
   <!-- Launch simlab_interface -->
-  <node name="simlab_interface" pkg="lu4r_ros_interface" type="simlab_interface.py" output="screen">
+  <node name="simlab_interface" pkg="lu4r_ros_interface" type="simlab_interface.py"
+    args="_lu4r_ip:=$(arg _lu4r_ip) _lu4r_port:=$(arg _lu4r_port) _semantic_map:=$(arg _semantic_map)" output="screen">
   </node>
 
   <!-- Launch simlab_interpreter -->
