@@ -17,4 +17,8 @@
   <node name="simlab_interpreter" pkg="lu4r_ros_interface" type="simlab_interpreter.py" output="screen">
   </node>
 
+  <!-- Launch rosarnl -->
+  <node name="rosarnl_node" pkg="rosarnl" type="rosarnl_node" output="screen">
+  </node>
+
 </launch>
