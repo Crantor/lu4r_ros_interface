@@ -13,5 +13,11 @@
     args="_lu4r_ip:=$(arg _lu4r_ip) _lu4r_port:=$(arg _lu4r_port) _semantic_map:=$(arg _semantic_map)" output="screen">
   </node>
 
+  <!-- Launch simlab_interpreter -->
+  <node name="simlab_interpreter" pkg="lu4r_ros_interface" type="simlab_interpreter.py" output="screen">
+  </node>
 
+  <!-- Launch simlab_interpreter -->
+   <node name="rosarnl_node" pkg="rosarnl" type="rosarnl_node" output="screen">
+  </node>
 </launch>

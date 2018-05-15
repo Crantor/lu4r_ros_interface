@@ -84,9 +84,9 @@ def bringing_command(action,content):
 	# In case the object is recognized
 	if index != -1:
 		goal = goals[index][0]
-
+		bringing_object = objects_to_be_taken[len(objects_to_be_taken)-1]
 		# Giving order to go to the indicated goal
-		print("BRINGING: Bring the " + objects_to_be_taken[len(objects_to_be_taken)-1])
+		print("BRINGING: Bring the " + bringing_object)
 		# No order given yet. First time executing robot
 		if last_target == ("",""):
 			# Adding "Bringing1 to last_target"
@@ -102,9 +102,21 @@ def bringing_command(action,content):
 		else:
 			return_object_to = current_target[1]
 
+
+		# Changing the location of the object
+		# Removing object from object list
+		objects[index].remove(bringing_object)
+
+		# Getting index of the goal
+		g_aux = [goals[i][0] for i,_ in enumerate(goals)]
+		indexAdd = g_aux.index(return_object_to)
+		# Adding the object to the new location
+		objects[indexAdd].append(bringing_object)
+
 		# Adding the target and the return target to the command_list.
 		command_list.append((possible_actions[18], goal))				# BRINGING1
 		command_list.append((possible_actions[19], return_object_to))	# BRINGING2
+
 
 	# In case the object is not recognized
 	else:
