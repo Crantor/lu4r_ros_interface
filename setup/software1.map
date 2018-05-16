@@ -30,8 +30,8 @@ Cairn: GoalWithHeading 1000 -4850 90.000000 "" ICON "Goal1"
 Cairn: GoalWithHeading 3500 -7000 180.000000 "" ICON "Goal2"
 Cairn: GoalWithHeading 1000 -4850 0.000000 "" ICON "kraken1"
 Cairn: GoalWithHeading 1000 -3350 -90.000000 "" ICON "kraken2"
-Cairn: GoalWithHeading 2500 -4850 90.000000 "" ICON "kraken3"
-Cairn: GoalWithHeading 2500 -3350 180.000000 "" ICON "kraken4"
+Cairn: GoalWithHeading 2500 -4850 90.000000 "" ICON "kraken4"
+Cairn: GoalWithHeading 2500 -3350 180.000000 "" ICON "kraken3"
 Cairn: Dock 3050 1880 90.000000 "" ICON "Dock"
 Cairn: ForbiddenArea 0 0 -90.000000 "" ICON "" 5752 915 8373 2560
 LINES

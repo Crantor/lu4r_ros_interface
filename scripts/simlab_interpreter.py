@@ -2,7 +2,7 @@
 # encoding=utf8
 
 import rospy
-from std_msgs.msg import String
+from std_msgs.msg import String, Empty
 import sys
 import os
 
@@ -15,6 +15,10 @@ sub_arnl = None
 
 # Publisher (RosARNL)
 pub = None
+pub_gripOpen = None
+pub_gripClose = None
+pub_gripStop = None
+
 
 possible_actions = ['ARRIVING',                	# 0
 				'ATTACHING',    			   	# 1
@@ -90,7 +94,7 @@ def bringing_command(action,content):
 		# No order given yet. First time executing robot
 		if last_target == ("",""):
 			# Adding "Bringing1 to last_target"
-			last_target = (possible_actions[18],"start")
+			last_target = (possible_actions[18],"Goal0")
 
 		#  There are orders in the command list. Gets the last place where the robot is going to be if there are more commands
 		if len(command_list) > 0:
@@ -106,6 +110,10 @@ def bringing_command(action,content):
 		# Changing the location of the object
 		# Removing object from object list
 		objects[index].remove(bringing_object)
+
+		# If the return is to the kraken goals it returns to the start
+		if return_object_to.lower() in ["kraken1","kraken2","kraken3","kraken4"]:
+			return_object_to = "Goal0"
 
 		# Getting index of the goal
 		g_aux = [goals[i][0] for i,_ in enumerate(goals)]
@@ -239,6 +247,22 @@ def interpretercallback(data):
 		pub.publish(current_target[1]) # Getting First command.
 
 def stateCallback(data):
+	# Manages the claws of the robot.
+	def claws():
+		# Open claws
+		pub_gripOpen.publish(Empty())
+		# Wait a few seconds
+		rospy.sleep(2)
+		# Stop
+		pub_gripStop.publish(Empty())
+		# Wait a few seconds
+		rospy.sleep(2)
+		# Close claws
+		pub_gripClose.publish(Empty())
+		# Wait a few seconds
+		rospy.sleep(2)
+
+
 	global isWorking
 	global current_target
 	global last_target
@@ -250,17 +274,25 @@ def stateCallback(data):
 		# Establishes the last visited target
 		last_target = current_target
 
+		# BRINGING1
+		# In case it is a BRINGING1 action, it has to return and request the object
+		if (current_target[0] == possible_actions[18]):
+			print("Give me the " + objects_to_be_taken.pop(0))
+			# Get object in the claws
+			claws()
+		# BRINGING2
+		elif (current_target[0] == possible_actions[19]):
+			print(" Giving object to master")
+			# Release the object
+			claws()
+
+
 		# In case there are no commands it stops working
 		if len(command_list) == 0:
 			isWorking = False
 			current_target = ("","")
 		# In case it has to do more actions, it does the next one
 		else:
-			# In case it is a BRINGING1 action, it has to return and request the object
-			if (current_target[0] == possible_actions[18]):
-				print("Give me the " + objects_to_be_taken.pop(0))
-			#elif (current_target[0] == possible_actions[19]):
-
 			# Establishes the new target and publishes it
 			current_target = command_list.pop(0)
 			pub.publish(current_target[1])
@@ -275,11 +307,20 @@ def listener():
 	global sub_interpreter
 	global sub_arnl
 	global pub
+	global pub_gripOpen
+	global pub_gripStop
+	global pub_gripClose
 
 	rospy.init_node('simlab_interpreter', anonymous=True)
 	sub_interpreter = rospy.Subscriber('/interpretation', String, interpretercallback)
 	sub_arnl = rospy.Subscriber('/rosarnl_node/arnl_path_state', String, stateCallback)
 	pub = rospy.Publisher('/rosarnl_node/goalname',String, queue_size = 1000)
+	pub_gripOpen = rospy.Publisher('/rosarnl_node/gripper/open',Empty, queue_size = 1000)
+	pub_gripStop = rospy.Publisher('/rosarnl_node/gripper/stop',Empty, queue_size = 1000)
+	pub_gripClose = rospy.Publisher('/rosarnl_node/gripper/close',Empty, queue_size = 1000)
+
+	rospy.sleep(1)
+	pub_gripClose.publish(Empty())
 
 	rospy.spin()
 
