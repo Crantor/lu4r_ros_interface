@@ -1,0 +1,7 @@
+0.
+Install docker
+Add lu4r-0.2.1_ folder to this folder. (Add the server files to this folder)
+1.
+docker build --tag=lu4r-server .
+2. 
+docker run -it --rm -p 9090:9090 lu4r-server
