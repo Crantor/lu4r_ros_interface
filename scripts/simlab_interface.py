@@ -1,28 +1,18 @@
 #!/usr/bin/env python
 # encoding=utf8
 
-# encoding=utf8
-
 import rospy
 from std_msgs.msg import String
-import socket
 import sys
 import requests
 import rospkg
 import json
-from math import radians, sin, cos
 from geometry_msgs.msg import Pose2D
-from geometry_msgs.msg import Twist
-import xmltodict
-import xdg_extract as xdg
-import netifaces as ni
 
 reload(sys)
 sys.setdefaultencoding('utf8')
 
-connection = None
 semantic_map = {}
-goal = Pose2D()
 HEADERS = {'content-type': 'application/json'}
 rospack = rospkg.RosPack()
 directory = rospack.get_path('lu4r_ros_interface')
@@ -50,13 +40,10 @@ def inputaudiocallback(data):
 		pub.publish(response.text)
 	else:
 		print('Lu4r server could not understand the command.')
-	#predicates = xdg.find_predicates(response.text)
-	# connection.send(predicates+'\r\n')
-	#print predicates
+
 
 def listener():
 	global semantic_map
-	global connection
 	global sub
 	global lu4r_ip
 	global lu4r_port
