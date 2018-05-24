@@ -51,7 +51,7 @@ goals = [
 	["Goal3","exit","door","escape"]]
 
 objects = [
-	["Goal0","book"],
+	["Goal0","bottle"],
 	["Goal1","knife","oven","spoon","fork","food"],
 	["Goal2","toothbrush","soap"],
 	["Goal3","mobile"]]
@@ -311,6 +311,7 @@ def listener():
 	global pub_gripStop
 	global pub_gripClose
 
+	# Initialize node, subscribers and publishers
 	rospy.init_node('simlab_interpreter', anonymous=True)
 	sub_interpreter = rospy.Subscriber('/interpretation', String, interpretercallback)
 	sub_arnl = rospy.Subscriber('/rosarnl_node/arnl_path_state', String, stateCallback)
@@ -319,7 +320,8 @@ def listener():
 	pub_gripStop = rospy.Publisher('/rosarnl_node/gripper/stop',Empty, queue_size = 1000)
 	pub_gripClose = rospy.Publisher('/rosarnl_node/gripper/close',Empty, queue_size = 1000)
 
-	rospy.sleep(1)
+	# Close the claws at the beginning
+	rospy.sleep(2)
 	pub_gripClose.publish(Empty())
 
 	rospy.spin()
